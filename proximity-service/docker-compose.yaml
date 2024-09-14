@@ -1,0 +1,29 @@
+services:
+  lbs:
+    restart: always
+    build:
+      context: lbs
+      target: builder
+    hostname: lbs
+    stop_signal: SIGINT
+    ports:
+      - "8000:8000"
+
+  bs:
+    restart: always
+    build:
+      context: bs
+      target: builder
+    hostname: bs
+    stop_signal: SIGINT
+    ports:
+      - "8001:8000"
+
+  proxy:
+    restart: always
+    build: nginx
+    ports:
+      - "8080:8080"
+    depends_on:
+      - lbs
+      - bs
