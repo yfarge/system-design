@@ -1,13 +1,17 @@
 services:
-  lbs:
+  db:
+    image: mariadb
     restart: always
-    build:
-      context: lbs
-      target: builder
-    hostname: lbs
-    stop_signal: SIGINT
-    ports:
-      - "8000:8000"
+    networks:
+      - app_network
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    expose:
+      - 3306
+      - 33060
 
   bs:
     restart: always
@@ -16,14 +20,23 @@ services:
       target: builder
     hostname: bs
     stop_signal: SIGINT
+    networks:
+      - app_network
     ports:
       - "8001:8000"
+    depends_on:
+      - db
 
   proxy:
     restart: always
     build: nginx
     ports:
       - "8080:8080"
+    networks:
+      - app_network
     depends_on:
-      - lbs
       - bs
+
+networks:
+  app_network:
+    driver: bridge
